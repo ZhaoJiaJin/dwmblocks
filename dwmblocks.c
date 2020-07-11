@@ -16,7 +16,6 @@ typedef struct {
 void dummysighandler(int num);
 void sighandler(int num);
 void rollingsighandler(int num);
-void replace(char *str, char old, char new);
 void getcmds(int time);
 #ifndef __OpenBSD__
 void getsigcmds(int signal);
@@ -40,15 +39,6 @@ static char statusstr[2][256];
 static int statusContinue = 1;
 static void (*writestatus) () = setroot;
 static int curbid = 0;
-
-void replace(char *str, char old, char new)
-{
-	int N = strlen(str);
-	for(int i = 0; i < N; i++)
-		if(str[i] == old)
-			str[i] = new;
-}
-
 
 //opens process *cmd and stores output in *output
 void getcmd(const Block *block, char *output)
