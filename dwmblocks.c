@@ -14,6 +14,7 @@ typedef struct {
 	unsigned int signal;
 } Block;
 void sighandler(int num);
+void rollingsighandler(int num);
 void replace(char *str, char old, char new);
 void getcmds(int time);
 #ifndef __OpenBSD__
@@ -30,12 +31,14 @@ void termhandler(int signum);
 #include "blocks.h"
 
 static Display *dpy;
+static Block *blocks;
 static int screen;
 static Window root;
-static char statusbar[LENGTH(blocks)][CMDLENGTH] = {0};
+static char statusbar[BLENG][CMDLENGTH] = {0};
 static char statusstr[2][256];
 static int statusContinue = 1;
 static void (*writestatus) () = setroot;
+static int curbid = 0;
 
 void replace(char *str, char old, char new)
 {
@@ -66,7 +69,7 @@ void getcmd(const Block *block, char *output)
 void getcmds(int time)
 {
 	const Block* current;
-	for(int i = 0; i < LENGTH(blocks); i++)
+	for(int i = 0; i < BLENG; i++)
 	{	
 		current = blocks + i;
 		if ((current->interval != 0 && time % current->interval == 0) || time == -1)
@@ -78,7 +81,7 @@ void getcmds(int time)
 void getsigcmds(int signal)
 {
 	const Block *current;
-	for (int i = 0; i < LENGTH(blocks); i++)
+	for (int i = 0; i < BLENG; i++)
 	{
 		current = blocks + i;
 		if (current->signal == signal)
@@ -88,11 +91,14 @@ void getsigcmds(int signal)
 
 void setupsignals()
 {
-	for(int i = 0; i < LENGTH(blocks); i++)
-	{	  
-		if (blocks[i].signal > 0)
-			signal(SIGRTMIN+blocks[i].signal, sighandler);
-	}
+    signal(SIGRTMIN+11, rollingsighandler);
+	for(int i = 0; i < BTOTAL; i++){
+	    for(int j = 0; j < BLENG; j++)
+	    {	  
+	    	if (blockss[i][j].signal > 0)
+	    		signal(SIGRTMIN+blockss[i][j].signal, sighandler);
+	    }
+    }
 
 }
 #endif
@@ -101,7 +107,7 @@ int getstatus(char *str, char *last)
 {
 	strcpy(last, str);
 	str[0] = '\0';
-	for(int i = 0; i < LENGTH(blocks); i++)
+	for(int i = 0; i < BLENG; i++)
 		strcat(str, statusbar[i]);
 	str[strlen(str)-1] = '\0';
 	return strcmp(str, last);//0 if they are the same
@@ -152,6 +158,13 @@ void sighandler(int signum)
 	getsigcmds(signum-SIGRTMIN);
 	writestatus();
 }
+
+void rollingsighandler(int signum){
+    curbid = (curbid+1) % BTOTAL;
+    blocks = blockss[curbid];
+    getcmds(-1);
+    writestatus();
+}
 #endif
 
 void termhandler(int signum)
@@ -162,6 +175,7 @@ void termhandler(int signum)
 
 int main(int argc, char** argv)
 {
+    blocks = blockss[curbid];
 	for(int i = 0; i < argc; i++)
 	{	
 		if (!strcmp("-d",argv[i]))
