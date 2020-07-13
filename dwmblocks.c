@@ -16,6 +16,7 @@ typedef struct {
 void dummysighandler(int num);
 void sighandler(int num);
 void rollingsighandler(int num);
+void updatesighandler(int num);
 void getcmds(int time);
 #ifndef __OpenBSD__
 void getsigcmds(int signal);
@@ -87,6 +88,7 @@ void setupsignals()
     for(int i = SIGRTMIN; i <= SIGRTMAX; i++)
         signal(i, dummysighandler);
     signal(SIGRTMIN+11, rollingsighandler);
+    signal(SIGRTMIN+12, updatesighandler);
 	for(int i = 0; i < BTOTAL; i++){
 	    for(int j = 0; j < BLENG; j++)
 	    {	  
@@ -167,6 +169,11 @@ void rollingsighandler(int signum){
     getcmds(-1);
     writestatus();
 }
+void updatesighandler(int signum){
+    getcmds(-1);
+    writestatus();
+}
+
 #endif
 
 void termhandler(int signum)

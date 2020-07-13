@@ -12,9 +12,9 @@ static Block blockss[BTOTAL][BLENG] = {
 },
 
 {
-	{"", "~/.config/scripts/disk",	60,		-1},
+	{"", "~/.config/scripts/disk",	10,		-1},
 	//{"", "~/.config/scripts/ramcpu",	10,		10},
-	{"", "~/.config/scripts/disk /home",	60,		-1},
+	{"", "~/.config/scripts/disk /home",	10,		-1},
 	{"", "~/.config/scripts/ram",	10,		-1},
 
 },
